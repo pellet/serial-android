@@ -24,8 +24,8 @@ add_library( # Sets the name of the library.
 		../jni/libs/nativehelper/JniConstants.cpp
 		../jni/libs/nativehelper/JniInvocation.cpp
 		../jni/libs/nativehelper/toStringArray.cpp
-		../jni/libs/serialport/glob.c
 		../jni/libs/serialport/list_ports_linux.cc
+		../jni/libs/serialport/glob.c
 		../jni/libs/serialport/serial.cc
 		../jni/libs/serialport/serial_unix.cc)
 		

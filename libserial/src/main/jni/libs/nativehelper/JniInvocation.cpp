@@ -23,11 +23,43 @@
 #include <cstddef>
 
 #define LOG_TAG "JniInvocation"
-#include "cutils/log.h"
+#include "ALog-priv.h"
 
 #ifdef HAVE_ANDROID_OS
 #include "cutils/properties.h"
 #endif
+
+#define CONDITION(cond)     (__builtin_expect((cond)!=0, 0))
+
+/*
+ * Log a fatal error.  If the given condition fails, this stops program
+ * execution like a normal assertion, but also generating the given message.
+ * It is NOT stripped from release builds.  Note that the condition test
+ * is -inverted- from the normal assert() semantics.
+ */
+#ifndef LOG_ALWAYS_FATAL_IF
+#define LOG_ALWAYS_FATAL_IF(cond, ...) \
+    ( (CONDITION(cond)) \
+    ? ((void)android_printAssert(#cond, LOG_TAG, ## __VA_ARGS__)) \
+    : (void)0 )
+#endif
+
+/* XXX Macros to work around syntax errors in places where format string
+ * arg is not passed to LOG_ASSERT, LOG_ALWAYS_FATAL or LOG_ALWAYS_FATAL_IF
+ * (happens only in debug builds).
+ */
+/* Returns 2nd arg.  Used to substitute default value if caller's vararg list
+ * is empty.
+ */
+#define __android_second(dummy, second, ...)     second
+/* If passed multiple args, returns ',' followed by all but 1st arg, otherwise
+ * returns nothing.
+ */
+#define __android_rest(first, ...)               , ## __VA_ARGS__
+#define android_printAssert(cond, tag, fmt...) \
+    __android_log_assert(cond, tag, \
+        __android_second(0, ## fmt, NULL) __android_rest(fmt))
+
 
 JniInvocation* JniInvocation::jni_invocation_ = NULL;
 
@@ -37,7 +69,9 @@ JniInvocation::JniInvocation() :
     JNI_CreateJavaVM_(NULL),
     JNI_GetCreatedJavaVMs_(NULL) {
 
-  LOG_ALWAYS_FATAL_IF(jni_invocation_ != NULL, "JniInvocation instance already initialized");
+  if (jni_invocation_ != NULL)
+    __android_log_assert("jni_invocation_ != NULL", LOG_TAG, "JniInvocation instance already initialized");
+//  LOG_ALWAYS_FATAL_IF(jni_invocation_ != NULL, "JniInvocation instance already initialized");
   jni_invocation_ = this;
 }
 

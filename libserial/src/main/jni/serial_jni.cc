@@ -29,14 +29,14 @@ static jobjectArray native_listPorts(JNIEnv *env, jobject)
     std::vector<PortInfo> ports = list_ports();
     jobjectArray portDescs = createStringArray(env, ports.size());
     int i = 0;
-    for(std::vector<PortInfo>::iterator it = ports.begin(); it < ports.end(); ++it, ++i) {
+    for(auto port_info : ports) {
         std::string desc;
-        desc += it->port;
+        desc += port_info.port;
         desc.push_back('\t');
-        desc += it->description;
+        desc += port_info.description;
         desc.push_back('\t');
-        desc += it->hardware_id;
-        env->SetObjectArrayElement(portDescs, i, stdStringToJstring(desc));
+        desc += port_info.hardware_id;
+        env->SetObjectArrayElement(portDescs, i++, stdStringToJstring(desc));
     }
 
     return portDescs;

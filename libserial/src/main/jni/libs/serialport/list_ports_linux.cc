@@ -17,10 +17,10 @@
 #include <cstdarg>
 #include <cstdlib>
 
-#include <glob.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <glob.h>
 
 #include "serial/serial.h"
 
@@ -30,10 +30,7 @@ using std::ifstream;
 using std::getline;
 using std::vector;
 using std::string;
-using std::cout;
-using std::endl;
 
-static vector<string> glob(const vector<string>& patterns);
 static string basename(const string& path);
 static string dirname(const string& path);
 static bool path_exists(const string& path);
@@ -49,24 +46,14 @@ glob(const vector<string>& patterns)
 {
     vector<string> paths_found;
 
-	if(patterns.size() == 0)
-	    return paths_found;
-
     glob_t glob_results;
+    int glob_size = 0;
 
-    int glob_retval = glob(patterns[0].c_str(), 0, NULL, &glob_results);
-
-    vector<string>::const_iterator iter = patterns.begin();
-
-    while(++iter != patterns.end())
-    {
-        glob_retval = glob(iter->c_str(), GLOB_APPEND, NULL, &glob_results);
-    }
+    for (const auto& pattern : patterns)
+        glob(pattern.c_str(), glob_size++ ? GLOB_APPEND : 0, nullptr, &glob_results);
 
     for(int path_index = 0; path_index < glob_results.gl_pathc; path_index++)
-    {
-        paths_found.push_back(glob_results.gl_pathv[path_index]);
-    }
+        paths_found.emplace_back(glob_results.gl_pathv[path_index]);
 
     globfree(&glob_results);
 
@@ -299,34 +286,23 @@ serial::list_ports()
 {
     vector<PortInfo> results;
 
-    vector<string> search_globs;
-    search_globs.push_back("/dev/ttyACM*");
-    search_globs.push_back("/dev/ttyS*");
-    search_globs.push_back("/dev/ttyUSB*");
-    search_globs.push_back("/dev/tty.*");
-    search_globs.push_back("/dev/cu.*");
+    vector<string> search_globs {
+        "/dev/ttyACM*",
+        "/dev/ttyS*",
+        "/dev/ttyUSB*",
+        "/dev/tty.*",
+        "/dev/cu.*"};
 
-    vector<string> devices_found = glob( search_globs );
-
-    vector<string>::iterator iter = devices_found.begin();
-
-    while( iter != devices_found.end() )
+    for (auto &device : glob(search_globs))
     {
-        string device = *iter++;
-
-        vector<string> sysfs_info = get_sysfs_info( device );
-
-        string friendly_name = sysfs_info[0];
-
-        string hardware_id = sysfs_info[1];
+        vector<string> sysfs_info = get_sysfs_info(device);
 
         PortInfo device_entry;
         device_entry.port = device;
-        device_entry.description = friendly_name;
-        device_entry.hardware_id = hardware_id;
+        device_entry.description = sysfs_info[0];
+        device_entry.hardware_id = sysfs_info[1];
 
         results.push_back( device_entry );
-
     }
 
     return results;
