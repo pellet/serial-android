@@ -150,7 +150,7 @@ public class Serial implements Closeable {
         CHARSET_UTF16LE = Charset.forName("UTF-16LE");
         CHARSET_UTF16BE = Charset.forName("UTF-16BE");
 
-        System.loadLibrary("serial");
+        System.loadLibrary("serial-lib");
     }
     /**
      * List available ports on this device.
