@@ -3,31 +3,22 @@
 This is a fork of a github project, it's been updated to use cmake instead of gcc and the most recent android studio toolchain.
 Use the `build-libs.sh` script to build the aar file which is required by the bindings project.
 
-
 ------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
+------------------------
 
 
 This is a serial port library for Android, with both JNI API and Java API.
